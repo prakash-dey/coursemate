@@ -1,6 +1,6 @@
 import { courseChunks, type CourseChunk } from "@/data/course";
 
-const STOP_WORDS = new Set(["a", "an", "and", "are", "as", "at", "be", "by", "for", "from", "how", "i", "in", "is", "it", "of", "on", "or", "that", "the", "this", "to", "was", "what", "when", "where", "which", "why", "with"]);
+const STOP_WORDS = new Set(["a", "an", "and", "are", "as", "at", "be", "by", "do", "does", "for", "from", "how", "i", "in", "is", "it", "of", "on", "or", "that", "the", "this", "to", "was", "what", "when", "where", "which", "why", "with"]);
 
 export function tokenize(text: string) {
   return text.toLowerCase().match(/[a-z0-9-]+/g)?.filter((token) => token.length > 1 && !STOP_WORDS.has(token)) ?? [];
