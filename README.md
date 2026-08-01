@@ -15,30 +15,46 @@ See the [system design](docs/system-design.md) for the complete architecture, da
 
 ### Local Supabase with Docker
 
-1. Install Docker Desktop and the Supabase CLI, then start the local stack. CourseMate uses ports `55321–55329` so it can coexist with another default Supabase project:
+1. Install Docker Desktop and the Supabase CLI. CourseMate uses ports `55321–55329` so it can coexist with another default Supabase project.
+
+2. In Google Cloud Console, create an OAuth 2.0 Client ID with application type **Web application**. Configure:
+
+   - Authorized JavaScript origins: `http://localhost:3000` and `http://127.0.0.1:3000`
+   - Authorized redirect URI: `http://127.0.0.1:55321/auth/v1/callback`
+
+3. Put the credentials in the ignored root `.env` file. Never commit this file:
+
+```text
+SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID=<google client id>
+SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_SECRET=<google client secret>
+```
+
+4. Start or restart local Supabase after changing either credential so GoTrue receives the provider configuration:
 
 ```bash
+npm run supabase:stop
 npm run supabase:start
 npm run supabase:status
 ```
 
-2. Copy the local `API URL`, `anon key`, and `service_role key` from `supabase status` into `.env.local`:
+5. Copy the local `API URL`, `anon key`, and `service_role key` from `supabase status` into `.env.local`:
 
 ```text
+APP_URL=http://localhost:3000
 NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:55321
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<local anon key>
 SUPABASE_SERVICE_ROLE_KEY=<local service_role key>
 NVIDIA_API_KEY=
 ```
 
-3. Install and start the app:
+6. Install and start the app:
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). Configure that address as an allowed Auth site/redirect URL in Supabase.
+Open [http://localhost:3000](http://localhost:3000) and continue with Google. CourseMate uses Supabase Auth's PKCE callback at `/auth/callback`; provider cancellation and invalid callback responses return to the sign-in screen with a safe error message.
 
 The migration is applied automatically on the first local start. To rebuild the local database from the checked-in migration:
 
@@ -51,6 +67,8 @@ This deletes only CourseMate's local Docker database contents. Stop the stack wi
 ### Hosted Supabase
 
 For production, create or obtain access to a Supabase project and apply `supabase/migrations/20260801140000_course_platform.sql` using the Supabase CLI or SQL editor. Use the hosted project URL and keys in the same environment variable names; never expose the service-role key to the browser.
+
+In the hosted Supabase dashboard, enable Google under **Authentication → Providers**, enter the Google client ID and secret, and add the callback URL shown by Supabase (normally `https://<project-ref>.supabase.co/auth/v1/callback`) as an authorized redirect URI in the same Google Cloud OAuth client. Set the Supabase Site URL and allowed redirect URL to the deployed application origin, then set `APP_URL` to that exact HTTPS origin in the application environment. No hosted project is provisioned by this repository.
 
 ## Validate
 

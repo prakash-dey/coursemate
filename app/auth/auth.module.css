@@ -1,0 +1,26 @@
+.googleButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--white);
+  color: var(--ink);
+  padding: 12px;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.googleButton:hover {
+  border-color: var(--green);
+  background: #f8f8f3;
+}
+
+.footnote {
+  margin: 18px 0 0 !important;
+  font: 10px/1.5 Arial, sans-serif !important;
+  text-align: center;
+}
