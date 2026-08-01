@@ -1,6 +1,4 @@
 import "server-only";
-import { courseChunks, type CourseChunk } from "@/data/course";
-import { cosineSimilarity, retrieveLexically } from "./retrieval";
 
 const baseUrl = process.env.NVIDIA_BASE_URL ?? "https://integrate.api.nvidia.com/v1";
 const chatModel = process.env.NVIDIA_CHAT_MODEL ?? "nvidia/nemotron-mini-4b-instruct";
@@ -30,22 +28,6 @@ export async function embedPassages(inputs: string[]) {
 export async function embedQuery(input: string) {
   if (!process.env.NVIDIA_API_KEY) throw new Error("NVIDIA_API_KEY is required for semantic retrieval.");
   return (await embed([input], "query"))[0];
-}
-
-export async function retrieve(query: string, module?: string, limit = 3): Promise<Array<{ chunk: CourseChunk; score: number }>> {
-  const candidates = courseChunks.filter((chunk) => !module || chunk.module === module);
-  if (!process.env.NVIDIA_API_KEY) return retrieveLexically(query, module, limit);
-  try {
-    const [queryVector, documentVectors] = await Promise.all([
-      embed([query], "query").then((items) => items[0]),
-      embed(candidates.map((chunk) => `${chunk.title}\n${chunk.content}`), "passage"),
-    ]);
-    return candidates.map((chunk, index) => ({ chunk, score: cosineSimilarity(queryVector, documentVectors[index]) }))
-      .filter((item) => item.score >= 0.3).sort((a, b) => b.score - a.score).slice(0, limit);
-  } catch (error) {
-    console.error("Embedding fallback:", error);
-    return retrieveLexically(query, module, limit);
-  }
 }
 
 export async function generate(system: string, user: string) {
