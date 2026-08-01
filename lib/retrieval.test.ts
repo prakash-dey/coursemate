@@ -8,6 +8,11 @@ describe("course retrieval", () => {
     expect(result.score).toBeGreaterThan(0.14);
   });
 
+  it("does not rank unrelated chunks through auxiliary words", () => {
+    const results = retrieveLexically("Why does chunk size matter?");
+    expect(results.map((result) => result.chunk.id)).toEqual(["chunking-1"]);
+  });
+
   it("returns no evidence for an unrelated question", () => {
     expect(retrieveLexically("Who won the football world cup yesterday?")).toEqual([]);
   });
