@@ -22,13 +22,13 @@ export default function Home() {
   useEffect(() => { const timer = window.setTimeout(() => void loadCourses(), 0); return () => window.clearTimeout(timer); }, [loadCourses]);
 
   async function createCourse(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault(); setCreating(true); setError(""); const form = new FormData(event.currentTarget);
-    try { const response = await fetch("/api/courses", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: form.get("name"), description: form.get("description") }) }); const data = await response.json(); if (!response.ok) throw new Error(data.error); setCourses((items) => [{ ...data.course, documents: [] }, ...items]); setSelectedId(data.course.id); event.currentTarget.reset(); }
+    event.preventDefault(); const formElement = event.currentTarget; setCreating(true); setError(""); const form = new FormData(formElement);
+    try { const response = await fetch("/api/courses", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: form.get("name"), description: form.get("description") }) }); const data = await response.json(); if (!response.ok) throw new Error(data.error); setCourses((items) => [{ ...data.course, documents: [] }, ...items]); setSelectedId(data.course.id); formElement.reset(); }
     catch (cause) { setError(cause instanceof Error ? cause.message : "Course creation failed."); } finally { setCreating(false); }
   }
   async function upload(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault(); if (!selected) return; setUploading(true); setError(""); const form = new FormData(event.currentTarget);
-    try { const response = await fetch(`/api/courses/${selected.id}/documents`, { method: "POST", body: form }); const data = await response.json(); if (!response.ok) throw new Error(data.error); event.currentTarget.reset(); await loadCourses(); }
+    event.preventDefault(); if (!selected) return; const formElement = event.currentTarget; setUploading(true); setError(""); const form = new FormData(formElement);
+    try { const response = await fetch(`/api/courses/${selected.id}/documents`, { method: "POST", body: form }); const data = await response.json(); if (!response.ok) throw new Error(data.error); formElement.reset(); await loadCourses(); }
     catch (cause) { setError(cause instanceof Error ? cause.message : "Document upload failed."); await loadCourses(); } finally { setUploading(false); }
   }
   async function ask(event: FormEvent) {
