@@ -3,6 +3,7 @@ export const ALLOWED_MIME_TYPES = new Set(["application/pdf", "text/plain", "tex
 
 export function validateUpload(file: Pick<File, "name" | "size" | "type">, prefix?: Uint8Array) {
   if (!file.name || file.name.length > 200) return "Use a filename between 1 and 200 characters.";
+  if (/[\u0000-\u001f\u007f\u202a-\u202e\u2066-\u2069]/.test(file.name)) return "The filename contains unsupported control characters.";
   if (!ALLOWED_MIME_TYPES.has(file.type)) return "Upload a PDF, Markdown, or plain-text file.";
   if (file.size <= 0 || file.size > MAX_UPLOAD_BYTES) return "Files must be between 1 byte and 10 MB.";
   if (file.type === "application/pdf" && prefix && String.fromCharCode(...prefix.slice(0, 5)) !== "%PDF-") return "The file does not contain a valid PDF header.";
