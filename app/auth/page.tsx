@@ -1,0 +1,5 @@
+import { signIn, signUp } from "./actions";
+export default async function AuthPage({ searchParams }: { searchParams: Promise<{ error?: string; message?: string }> }) {
+  const params = await searchParams;
+  return <main className="auth-page"><section className="auth-card"><div className="brand"><span className="brand-mark">C</span><span>CourseMate</span></div><p className="overline">YOUR LEARNING WORKSPACE</p><h1>Turn your material into a course.</h1><p>Upload your notes, ask grounded questions, and test what you know.</p>{params.error && <div className="error">{params.error}</div>}{params.message && <div className="notice">{params.message}</div>}<form><label>Email<input name="email" type="email" required autoComplete="email" /></label><label>Password<input name="password" type="password" required minLength={8} autoComplete="current-password" /></label><div className="auth-actions"><button formAction={signIn}>Sign in</button><button className="secondary" formAction={signUp}>Create account</button></div></form></section></main>;
+}
