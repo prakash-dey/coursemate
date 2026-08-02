@@ -10,7 +10,7 @@ export type ChatResponse = {
   answer: string;
   sources: Source[];
   grounded: boolean;
-  mode: "nim" | "local-demo";
+  mode: "nim" | "conversation" | "local-demo";
 };
 
 export type QuizQuestion = {

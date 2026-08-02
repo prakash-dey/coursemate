@@ -1,15 +1,17 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { embedQuery, generate } from "@/lib/nvidia";
+import { chatMatchThreshold, isConversationalMessage } from "@/lib/retrieval";
 import { requireUser } from "@/lib/supabase/server";
 
-const schema = z.object({ courseId: z.string().uuid(), question: z.string().trim().min(3).max(500) });
+const schema = z.object({ courseId: z.string().uuid(), question: z.string().trim().min(1).max(500) });
 export async function POST(request: Request) {
   const parsed = schema.safeParse(await request.json().catch(() => null)); if (!parsed.success) return NextResponse.json({ error: "Choose a course and enter a valid question." }, { status: 400 });
   const { supabase, user } = await requireUser(); if (!user) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
   const { data: course } = await supabase.from("courses").select("id").eq("id", parsed.data.courseId).single(); if (!course) return NextResponse.json({ error: "Course not found." }, { status: 404 });
+  if (isConversationalMessage(parsed.data.question)) return NextResponse.json({ answer: "Hey! What would you like to understand from this course? Ask about a concept, request a summary, or try a quiz.", sources: [], grounded: false, mode: "conversation" });
   try {
-    const vector = await embedQuery(parsed.data.question); const { data, error } = await supabase.rpc("match_course_chunks", { query_embedding: vector, target_course_id: course.id, match_threshold: 0.35, match_count: 5 });
+    const vector = await embedQuery(parsed.data.question); const { data, error } = await supabase.rpc("match_course_chunks", { query_embedding: vector, target_course_id: course.id, match_threshold: chatMatchThreshold(parsed.data.question), match_count: 5 });
     if (error) throw error; const matches = data ?? [];
     if (!matches.length) return NextResponse.json({ answer: "I couldn’t find enough evidence in this course to answer that. Add relevant material or rephrase your question.", sources: [], grounded: false, mode: "nim" });
     const context = matches.map((item: { title: string; content: string }, index: number) => `[S${index + 1}] ${item.title}\n${item.content}`).join("\n\n");
