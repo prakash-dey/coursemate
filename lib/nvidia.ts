@@ -22,6 +22,16 @@ async function embed(inputs: string[], inputType: "query" | "passage") {
   return json.data.sort((a, b) => a.index - b.index).map((item) => item.embedding);
 }
 
+export async function embedPassages(inputs: string[]) {
+  if (!process.env.NVIDIA_API_KEY) throw new Error("NVIDIA_API_KEY is required to ingest documents.");
+  return embed(inputs, "passage");
+}
+
+export async function embedQuery(input: string) {
+  if (!process.env.NVIDIA_API_KEY) throw new Error("NVIDIA_API_KEY is required for semantic retrieval.");
+  return (await embed([input], "query"))[0];
+}
+
 export async function retrieve(query: string, module?: string, limit = 3): Promise<Array<{ chunk: CourseChunk; score: number }>> {
   const candidates = courseChunks.filter((chunk) => !module || chunk.module === module);
   if (!process.env.NVIDIA_API_KEY) return retrieveLexically(query, module, limit);
