@@ -7,7 +7,11 @@ export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !key) return response;
+  if (!url || !key) {
+    if (request.nextUrl.pathname.startsWith("/api/")) return NextResponse.json({ error: "Service configuration is unavailable." }, { status: 503 });
+    if (request.nextUrl.pathname === "/auth") return response;
+    return NextResponse.redirect(new URL("/auth?error=configuration_error", request.url));
+  }
 
   const supabase = createServerClient(url, key, {
     cookies: {
