@@ -11,6 +11,20 @@
     overflow: hidden;
   }
 
+  .course-workspace > header {
+    height: 104px;
+    padding: 20px 32px;
+  }
+
+  .course-workspace h1 {
+    font-size: 30px;
+    margin: 5px 0;
+  }
+
+  .workspace-grid {
+    height: calc(100dvh - 104px);
+  }
+
   .workspace-grid,
   .study-pane {
     min-height: 0;
