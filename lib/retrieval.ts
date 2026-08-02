@@ -1,6 +1,8 @@
 export const CHAT_MATCH_THRESHOLD = 0.1;
 export const SUMMARY_MATCH_THRESHOLD = 0.05;
-export const QUIZ_MATCH_THRESHOLD = 0.1;
+// Quiz generation is explicitly course-scoped. Rank chunks semantically, but
+// do not discard ready course material based on a generic topic's score.
+export const QUIZ_MATCH_THRESHOLD = -1;
 
 export function isConversationalMessage(input: string) {
   const normalized = input.toLowerCase().replace(/[^a-z\s]/g, " ").replace(/\s+/g, " ").trim();
