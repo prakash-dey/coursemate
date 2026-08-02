@@ -1,0 +1,38 @@
+@media (min-width: 681px) {
+  .platform-shell {
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .course-workspace {
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .workspace-grid,
+  .study-pane {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .conversation {
+    min-height: 0;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .conversation::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.composer button {
+  cursor: pointer;
+}
+
+.composer button:disabled {
+  cursor: not-allowed;
+}
