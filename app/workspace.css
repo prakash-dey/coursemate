@@ -1,0 +1,52 @@
+@media (min-width: 681px) {
+  .platform-shell {
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .course-workspace {
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .course-workspace > header {
+    height: 104px;
+    padding: 20px 32px;
+  }
+
+  .course-workspace h1 {
+    font-size: 30px;
+    margin: 5px 0;
+  }
+
+  .workspace-grid {
+    height: calc(100dvh - 104px);
+  }
+
+  .workspace-grid,
+  .study-pane {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .conversation {
+    min-height: 0;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .conversation::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.composer button {
+  cursor: pointer;
+}
+
+.composer button:disabled {
+  cursor: not-allowed;
+}
