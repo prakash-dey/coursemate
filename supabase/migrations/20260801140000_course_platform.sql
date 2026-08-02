@@ -17,15 +17,20 @@ create table public.documents (
 create table public.chunks (
   id bigint generated always as identity primary key, course_id uuid not null, document_id uuid not null, owner_id uuid not null,
   ordinal integer not null check (ordinal >= 0), content text not null check (char_length(content) between 1 and 8000),
-  embedding extensions.vector(2048) not null, created_at timestamptz not null default now(),
+  embedding extensions.halfvec(2048) not null, created_at timestamptz not null default now(),
   foreign key (document_id, course_id) references public.documents(id, course_id) on delete cascade,
   foreign key (document_id, owner_id) references public.documents(id, owner_id) on delete cascade, unique (document_id, ordinal)
 );
 create index courses_owner_created_idx on public.courses(owner_id, created_at desc);
 create index documents_course_created_idx on public.documents(course_id, created_at desc);
 create index chunks_course_idx on public.chunks(course_id);
-create index chunks_embedding_hnsw_idx on public.chunks using hnsw (embedding extensions.vector_cosine_ops);
+create index chunks_embedding_hnsw_idx on public.chunks using hnsw (embedding extensions.halfvec_cosine_ops);
 alter table public.courses enable row level security; alter table public.documents enable row level security; alter table public.chunks enable row level security;
+grant select, insert, update, delete on public.courses to authenticated;
+grant select, insert, delete on public.documents to authenticated;
+grant select on public.chunks to authenticated;
+grant all on public.courses, public.documents, public.chunks to service_role;
+grant usage, select on all sequences in schema public to service_role;
 create policy "owners manage courses" on public.courses for all using (owner_id = auth.uid()) with check (owner_id = auth.uid());
 create policy "owners read documents" on public.documents for select using (owner_id = auth.uid());
 create policy "owners insert documents" on public.documents for insert with check (owner_id = auth.uid() and exists (select 1 from public.courses c where c.id = course_id and c.owner_id = auth.uid()));
@@ -39,13 +44,13 @@ create policy "users upload own course documents" on storage.objects for insert 
 create policy "users read own course documents" on storage.objects for select to authenticated using (bucket_id = 'course-documents' and (storage.foldername(name))[1] = auth.uid()::text);
 create policy "users delete own course documents" on storage.objects for delete to authenticated using (bucket_id = 'course-documents' and (storage.foldername(name))[1] = auth.uid()::text);
 
-create or replace function public.match_course_chunks(query_embedding extensions.vector(2048), target_course_id uuid, match_threshold float default 0.35, match_count int default 5)
+create or replace function public.match_course_chunks(query_embedding extensions.halfvec(2048), target_course_id uuid, match_threshold float default 0.35, match_count int default 5)
 returns table (id bigint, document_id uuid, title text, content text, similarity float)
 language sql stable security invoker set search_path = '' as $$
-  select c.id, c.document_id, d.title, c.content, 1 - (c.embedding <=> query_embedding) as similarity
+  select c.id, c.document_id, d.title, c.content, 1 - (c.embedding operator(extensions.<=>) query_embedding) as similarity
   from public.chunks c join public.documents d on d.id = c.document_id
   where c.course_id = target_course_id and c.owner_id = auth.uid() and d.status = 'ready'
-    and 1 - (c.embedding <=> query_embedding) >= match_threshold
-  order by c.embedding <=> query_embedding limit least(match_count, 10);
+    and 1 - (c.embedding operator(extensions.<=>) query_embedding) >= match_threshold
+  order by c.embedding operator(extensions.<=>) query_embedding limit least(match_count, 10);
 $$;
 grant execute on function public.match_course_chunks to authenticated;

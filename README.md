@@ -13,18 +13,25 @@ See the [system design](docs/system-design.md) for the complete architecture, da
 
 ## Local setup
 
-1. Create or obtain access to a Supabase project. No external project is provisioned by this repository.
-2. Apply `supabase/migrations/20260801140000_course_platform.sql` using the Supabase CLI or SQL editor.
-3. Copy `.env.example` to `.env.local` and provide:
+### Local Supabase with Docker
+
+1. Install Docker Desktop and the Supabase CLI, then start the local stack. CourseMate uses ports `55321–55329` so it can coexist with another default Supabase project:
+
+```bash
+npm run supabase:start
+npm run supabase:status
+```
+
+2. Copy the local `API URL`, `anon key`, and `service_role key` from `supabase status` into `.env.local`:
 
 ```text
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
+NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:55321
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<local anon key>
+SUPABASE_SERVICE_ROLE_KEY=<local service_role key>
 NVIDIA_API_KEY=
 ```
 
-4. Install and start the app:
+3. Install and start the app:
 
 ```bash
 npm install
@@ -32,6 +39,18 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000). Configure that address as an allowed Auth site/redirect URL in Supabase.
+
+The migration is applied automatically on the first local start. To rebuild the local database from the checked-in migration:
+
+```bash
+npm run supabase:reset
+```
+
+This deletes only CourseMate's local Docker database contents. Stop the stack without deleting its Docker volume with `npm run supabase:stop`.
+
+### Hosted Supabase
+
+For production, create or obtain access to a Supabase project and apply `supabase/migrations/20260801140000_course_platform.sql` using the Supabase CLI or SQL editor. Use the hosted project URL and keys in the same environment variable names; never expose the service-role key to the browser.
 
 ## Validate
 
