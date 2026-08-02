@@ -10,7 +10,8 @@ export async function POST(request: Request) {
   const { supabase, user } = await requireUser(); if (!user) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
   const { data: course } = await supabase.from("courses").select("id").eq("id", parsed.data.courseId).single(); if (!course) return NextResponse.json({ error: "Course not found." }, { status: 404 });
   try {
-    const vector = await embedQuery(parsed.data.topic || "key concepts"); const { data } = await supabase.rpc("match_course_chunks", { query_embedding: vector, target_course_id: course.id, match_threshold: QUIZ_MATCH_THRESHOLD, match_count: 8 });
+    const vector = await embedQuery(parsed.data.topic || "key concepts"); const { data, error } = await supabase.rpc("match_course_chunks", { query_embedding: vector, target_course_id: course.id, match_threshold: QUIZ_MATCH_THRESHOLD, match_count: 8 });
+    if (error) throw error;
     if (!data?.length) return NextResponse.json({ error: "This course has no ready material for a quiz yet." }, { status: 409 });
     const result = await generate("Create exactly 3 multiple-choice questions only from the material. Return only a JSON array with question, four options, answerIndex, explanation.", data.map((item: { content: string }) => item.content).join("\n\n"));
     return NextResponse.json({ quiz: quizSchema.parse(JSON.parse(result ?? "")), mode: "nim" });

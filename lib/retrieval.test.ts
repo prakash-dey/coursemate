@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   CHAT_MATCH_THRESHOLD,
+  QUIZ_MATCH_THRESHOLD,
   SUMMARY_MATCH_THRESHOLD,
   chatMatchThreshold,
   isConversationalMessage,
@@ -26,5 +27,9 @@ describe("retrieval intent and confidence", () => {
   it("uses a lower threshold only for broad summary retrieval", () => {
     expect(chatMatchThreshold("Summarize the course")).toBe(SUMMARY_MATCH_THRESHOLD);
     expect(chatMatchThreshold("Explain termination terms")).toBe(CHAT_MATCH_THRESHOLD);
+  });
+
+  it("ranks all ready course chunks for quiz generation", () => {
+    expect(QUIZ_MATCH_THRESHOLD).toBe(-1);
   });
 });
